@@ -15,6 +15,8 @@ add_library(core_lib
     src/core/WindowsUsbDeviceManager.cpp
     src/core/NetworkTransport.h
     src/core/NetworkTransport.cpp
+    src/core/UdpBroadcaster.h
+    src/core/UdpBroadcaster.cpp
 )
 
 target_link_libraries(core_lib PRIVATE Qt6::Core Qt6::Network)
@@ -48,3 +50,9 @@ add_executable(test_gui
 )
 target_link_libraries(test_gui PRIVATE core_lib Qt6::Test Qt6::Widgets)
 add_test(NAME test_gui COMMAND test_gui)
+
+add_executable(test_udp_discovery
+    tests/test_udp_discovery.cpp
+)
+target_link_libraries(test_udp_discovery PRIVATE core_lib Qt6::Test)
+add_test(NAME test_udp_discovery COMMAND test_udp_discovery)
