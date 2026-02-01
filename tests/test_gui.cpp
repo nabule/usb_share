@@ -24,6 +24,12 @@ private slots:
         // QTest::mouseClick(btn, Qt::LeftButton);
         // Verify state change (would require mocking the backend)
     }
+    void testDiscoveryUI() {
+        MainWindow w;
+        QTreeWidget *list = w.findChild<QTreeWidget*>("discoveryList");
+        QVERIFY(list != nullptr);
+        QCOMPARE(list->headerItem()->text(0), "Hostname");
+    }
 };
 
 QTEST_MAIN(TestGui)
