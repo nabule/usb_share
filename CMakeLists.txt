@@ -13,6 +13,8 @@ add_library(core_lib
     src/core/UsbDeviceManager.cpp
     src/core/WindowsUsbDeviceManager.h
     src/core/WindowsUsbDeviceManager.cpp
+    src/core/NetworkTransport.h
+    src/core/NetworkTransport.cpp
 )
 
 target_link_libraries(core_lib PRIVATE Qt6::Core Qt6::Network)
@@ -23,7 +25,11 @@ enable_testing()
 add_executable(test_usb_export
     tests/test_usb_export.cpp
 )
-
 target_link_libraries(test_usb_export PRIVATE core_lib Qt6::Test)
-
 add_test(NAME test_usb_export COMMAND test_usb_export)
+
+add_executable(test_network_transport
+    tests/test_network_transport.cpp
+)
+target_link_libraries(test_network_transport PRIVATE core_lib Qt6::Test)
+add_test(NAME test_network_transport COMMAND test_network_transport)
