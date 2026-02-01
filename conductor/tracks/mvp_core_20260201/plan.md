@@ -8,7 +8,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Driver Scaffolding' (Protocol in workflow.md) [checkpoint: 664b145]
 
 ## Phase 2: Core Logic Implementation
-- [ ] Task: 实现 USB 导出器 (Exporter/Stub) 逻辑
+- [x] Task: 实现 USB 导出器 (Exporter/Stub) 逻辑 8978ce2
     - [ ] 编写测试以验证 USB 设备列表获取功能
     - [ ] 实现 stub 驱动的绑定与解绑控制逻辑
 - [ ] Task: 实现网络传输协议层
