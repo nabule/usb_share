@@ -1,0 +1,8 @@
+{
+  "track_id": "udp_discovery_20260201",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-01T16:00:00Z",
+  "updated_at": "2026-02-01T16:00:00Z",
+  "description": "实现局域网设备自动发现 (UDP Discovery)"
+}
