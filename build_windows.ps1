@@ -41,26 +41,36 @@ cmake -G "MinGW Makefiles" `
 Write-Host "Building..."
 cmake --build . --parallel
 
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "`nRunning windeployqt to package dependencies..." -ForegroundColor Cyan
-    $WinDeployQt = Get-ChildItem -Path $SearchRoot -Filter "windeployqt.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-    if ($WinDeployQt) {
-        & $WinDeployQt --no-compiler-runtime usb_share.exe
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Build Successful! Executable is in: $BuildDir" -ForegroundColor Green
         
-        Write-Host "Copying MinGW runtime DLLs..." -ForegroundColor Cyan
-        $MinGwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
-        foreach ($dll in $MinGwDlls) {
-            $dllSource = Get-ChildItem -Path $MinGWBin -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-            if ($dllSource) {
-                Copy-Item $dllSource . -Force
-                Write-Host "Copied $dll"
+        # --- NEW: Distribution Step ---
+        $DistDir = "..\\dist"
+        if (Test-Path $DistDir) { Remove-Item -Recurse -Force $DistDir }
+        New-Item -ItemType Directory -Path $DistDir
+        
+        Write-Host "`nPreparing distribution folder at '$DistDir'..." -ForegroundColor Cyan
+        
+        # Copy main executable
+        Copy-Item "usb_share.exe" $DistDir
+        
+        # Run windeployqt on the dist copy to keep it clean
+        if ($WinDeployQt) {
+            Write-Host "Running windeployqt..."
+            & $WinDeployQt --no-compiler-runtime "$DistDir\\usb_share.exe"
+            
+            Write-Host "Copying MinGW runtime DLLs..."
+            $MinGwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
+            foreach ($dll in $MinGwDlls) {
+                $dllSource = Get-ChildItem -Path $MinGWBin -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+                if ($dllSource) {
+                    Copy-Item $dllSource $DistDir -Force
+                }
             }
         }
+        
+        Write-Host "`nDistribution folder ready! You can now zip the 'dist' folder." -ForegroundColor Green
+        Write-Host "Note: All test files have been excluded."
     } else {
-        Write-Host "Warning: windeployqt.exe not found. You might need to manually copy Qt DLLs." -ForegroundColor Yellow
-    }
-
-    Write-Host "`nBuild Successful! Executable is in: $BuildDir" -ForegroundColor Green
-} else {
     Write-Host "Build Failed."
 }
