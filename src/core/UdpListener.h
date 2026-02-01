@@ -2,9 +2,10 @@
 #define UDPLISTENER_H
 
 #include <QObject>
-#include <QUdpSocket>
+#include <QtNetwork/QUdpSocket>
 #include <QList>
 #include <QDateTime>
+#include <QTimer>
 
 struct DiscoveredDevice {
     QString hostname;

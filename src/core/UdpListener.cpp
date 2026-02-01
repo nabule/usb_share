@@ -2,6 +2,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
+#include <QtNetwork/QNetworkDatagram>
 
 UdpListener::UdpListener(QObject *parent) : QObject(parent) {
     udpSocket = new QUdpSocket(this);

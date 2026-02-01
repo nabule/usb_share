@@ -5,10 +5,16 @@ project(usb_share LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Test)
+# Enable Qt features
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+# Ensure Qt6 is found
+find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets Test)
 
 # Core Library
-add_library(core_lib
+add_library(core_lib STATIC
     src/core/UsbDeviceManager.h
     src/core/UsbDeviceManager.cpp
     src/core/WindowsUsbDeviceManager.h
@@ -21,40 +27,41 @@ add_library(core_lib
     src/core/UdpListener.cpp
 )
 
-target_link_libraries(core_lib PRIVATE Qt6::Core Qt6::Network)
+# Use PUBLIC to propagate include directories and libraries to dependents
+target_link_libraries(core_lib PUBLIC Qt6::Core Qt6::Network)
+target_include_directories(core_lib PUBLIC src/core)
 
-# Define mock/test build logic
+# Main Executable
 add_executable(usb_share
     src/main.cpp
     src/gui/MainWindow.h
     src/gui/MainWindow.cpp
 )
+# Note: linking core_lib should bring in Qt6::Network headers
 target_link_libraries(usb_share PRIVATE core_lib Qt6::Widgets)
+target_include_directories(usb_share PRIVATE src/gui)
 
+# Tests
 enable_testing()
 
-add_executable(test_usb_export
-    tests/test_usb_export.cpp
-)
-target_link_libraries(test_usb_export PRIVATE core_lib Qt6::Test)
-add_test(NAME test_usb_export COMMAND test_usb_export)
+# Function to add tests
+function(add_qt_test test_name source_file)
+    add_executable(${test_name} ${source_file})
+    # Explicitly link Qt6::Network just in case propagation is failing
+    target_link_libraries(${test_name} PRIVATE core_lib Qt6::Test Qt6::Network)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+endfunction()
 
-add_executable(test_network_transport
-    tests/test_network_transport.cpp
-)
-target_link_libraries(test_network_transport PRIVATE core_lib Qt6::Test)
-add_test(NAME test_network_transport COMMAND test_network_transport)
+add_qt_test(test_usb_export tests/test_usb_export.cpp)
+add_qt_test(test_network_transport tests/test_network_transport.cpp)
+add_qt_test(test_udp_discovery tests/test_udp_discovery.cpp)
 
+# Manual GUI test
 add_executable(test_gui
     tests/test_gui.cpp
     src/gui/MainWindow.h
     src/gui/MainWindow.cpp
 )
-target_link_libraries(test_gui PRIVATE core_lib Qt6::Test Qt6::Widgets)
+target_link_libraries(test_gui PRIVATE core_lib Qt6::Test Qt6::Widgets Qt6::Network)
+target_include_directories(test_gui PRIVATE src/gui)
 add_test(NAME test_gui COMMAND test_gui)
-
-add_executable(test_udp_discovery
-    tests/test_udp_discovery.cpp
-)
-target_link_libraries(test_udp_discovery PRIVATE core_lib Qt6::Test)
-add_test(NAME test_udp_discovery COMMAND test_udp_discovery)

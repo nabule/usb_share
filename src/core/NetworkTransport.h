@@ -1,7 +1,7 @@
 #ifndef NETWORKTRANSPORT_H
 #define NETWORKTRANSPORT_H
 
-#include <QTcpSocket>
+#include <QtNetwork/QTcpSocket>
 #include <QObject>
 
 class NetworkTransport : public QObject {

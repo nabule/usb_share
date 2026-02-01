@@ -2,7 +2,7 @@
 #define UDPBROADCASTER_H
 
 #include <QObject>
-#include <QUdpSocket>
+#include <QtNetwork/QUdpSocket>
 #include <QTimer>
 
 class UdpBroadcaster : public QObject {
