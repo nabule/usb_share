@@ -1,7 +1,7 @@
 # Implementation Plan - UDP Discovery
 
 ## Phase 1: Core Network Logic
-- [ ] Task: 实现 UdpBroadcaster 类
+- [x] Task: 实现 UdpBroadcaster 类 b40f47d
     - [ ] 编写测试：验证广播数据包格式 (JSON) 正确性
     - [ ] 实现定时广播逻辑 (QUdpSocket)
 - [ ] Task: 实现 UdpListener 类
