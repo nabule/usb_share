@@ -7,7 +7,7 @@
 - [x] Task: 实现 UdpListener 类 8633ae5
     - [ ] 编写测试：验证接收和解析广播包的逻辑
     - [ ] 实现设备列表维护 (去重、超时移除)
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Core Network Logic' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Core Network Logic' (Protocol in workflow.md) [checkpoint: eb8f046]
 
 ## Phase 2: GUI Integration
 - [ ] Task: 更新 MainWindow UI
