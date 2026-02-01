@@ -17,7 +17,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Core Logic Implementation' (Protocol in workflow.md) [checkpoint: 286e033]
 
 ## Phase 3: GUI & Integration
-- [ ] Task: 构建 Qt 用户界面
+- [x] Task: 构建 Qt 用户界面 0086df0
     - [ ] 实现设备列表显示的 UI 模块
     - [ ] 实现连接配置对话框
 - [ ] Task: 端到端集成测试
