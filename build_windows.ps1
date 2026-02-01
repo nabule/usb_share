@@ -6,9 +6,15 @@ Write-Host "Scanning Qt and Toolchains..."
 $CMakeBin = Get-ChildItem -Path $SearchRoot -Filter "cmake.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty DirectoryName
 $MinGWBin = Get-ChildItem -Path $SearchRoot -Filter "g++.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty DirectoryName
 $QtLibBin = Get-ChildItem -Path $SearchRoot -Filter "Qt6Core.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty DirectoryName
+$WinDeployQt = Get-ChildItem -Path $SearchRoot -Filter "windeployqt.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 
-if (-not ($CMakeBin -and $MinGWBin -and $QtLibBin)) {
+if (-not ($CMakeBin -and $MinGWBin -and $QtLibBin -and $WinDeployQt)) {
     Write-Host "Error: Could not find complete environment in $SearchRoot"
+    Write-Host "Missing components:"
+    if (-not $CMakeBin) { Write-Host "- CMake" }
+    if (-not $MinGWBin) { Write-Host "- MinGW (g++)" }
+    if (-not $QtLibBin) { Write-Host "- Qt Libraries (Qt6Core.dll)" }
+    if (-not $WinDeployQt) { Write-Host "- windeployqt.exe" }
     exit 1
 }
 
@@ -23,13 +29,16 @@ Write-Host "Found MinGW: $MinGWBin"
 Write-Host "Found Qt Root: $QtRoot"
 
 # Start Build
-$BuildDir = "build_windows"
+$ProjectRoot = Get-Location
+$BuildDir = Join-Path $ProjectRoot "build_windows"
+$DistDir = Join-Path $ProjectRoot "dist"
+
 if (Test-Path $BuildDir) { 
     Write-Host "Cleaning old build directory..."
     Remove-Item -Recurse -Force $BuildDir 
 }
 New-Item -ItemType Directory -Path $BuildDir
-cd $BuildDir
+Set-Location $BuildDir
 
 Write-Host "Configuring Project..."
 # Pass BOTH CMAKE_PREFIX_PATH and the specific Qt6_DIR to be absolutely sure
@@ -41,36 +50,34 @@ cmake -G "MinGW Makefiles" `
 Write-Host "Building..."
 cmake --build . --parallel
 
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Build Successful! Executable is in: $BuildDir" -ForegroundColor Green
-        
-        # --- NEW: Distribution Step ---
-        $DistDir = "..\\dist"
-        if (Test-Path $DistDir) { Remove-Item -Recurse -Force $DistDir }
-        New-Item -ItemType Directory -Path $DistDir
-        
-        Write-Host "`nPreparing distribution folder at '$DistDir'..." -ForegroundColor Cyan
-        
-        # Copy main executable
-        Copy-Item "usb_share.exe" $DistDir
-        
-        # Run windeployqt on the dist copy to keep it clean
-        if ($WinDeployQt) {
-            Write-Host "Running windeployqt..."
-            & $WinDeployQt --no-compiler-runtime "$DistDir\\usb_share.exe"
-            
-            Write-Host "Copying MinGW runtime DLLs..."
-            $MinGwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
-            foreach ($dll in $MinGwDlls) {
-                $dllSource = Get-ChildItem -Path $MinGWBin -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-                if ($dllSource) {
-                    Copy-Item $dllSource $DistDir -Force
-                }
-            }
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Build Successful!" -ForegroundColor Green
+    
+    # --- Distribution Step ---
+    if (Test-Path $DistDir) { Remove-Item -Recurse -Force $DistDir }
+    New-Item -ItemType Directory -Path $DistDir
+    
+    Write-Host "`nPreparing distribution folder at '$DistDir'..." -ForegroundColor Cyan
+    
+    # Copy main executable
+    Copy-Item "usb_share.exe" $DistDir
+    
+    # Run windeployqt
+    Write-Host "Running windeployqt..."
+    & $WinDeployQt --no-compiler-runtime (Join-Path $DistDir "usb_share.exe")
+    
+    # Copy MinGW runtime DLLs
+    Write-Host "Copying MinGW runtime DLLs..."
+    $MinGwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll", "libgcc_s_dw2-1.dll")
+    foreach ($dll in $MinGwDlls) {
+        $dllSource = Get-ChildItem -Path $MinGWBin -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+        if ($dllSource) {
+            Copy-Item $dllSource $DistDir -Force
+            Write-Host "Copied $dll"
         }
-        
-        Write-Host "`nDistribution folder ready! You can now zip the 'dist' folder." -ForegroundColor Green
-        Write-Host "Note: All test files have been excluded."
-    } else {
+    }
+    
+    Write-Host "`nDistribution folder ready! Path: $DistDir" -ForegroundColor Green
+} else {
     Write-Host "Build Failed."
 }
