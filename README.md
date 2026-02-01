@@ -43,17 +43,17 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 - **操作系统**: Windows 10 / 11 (64-bit)
 - **网络**: 两台电脑需处于同一局域网（或通过 VPN 互通）
 
-### 1. 下载程序
-从 [Releases](https://github.com/your-repo/usb-share/releases) 页面下载最新的 `usb_share.zip` 并解压。
+### 1. 安装核心驱动 (推荐方式)
+本项目使用 `usbipd-win` 作为底层驱动引擎，它提供了经过数字签名的稳定驱动。
+- 访问 [usbipd-win Releases](https://github.com/dorssel/usbipd-win/releases)。
+- 下载最新的 `.msi` 安装包并安装。
+- 安装完成后，在管理员权限的 PowerShell 中运行 `usbipd list` 确认环境正常。
 
-### 2. 安装驱动
-程序运行依赖 `usbip-win` 驱动。
-- 以管理员权限打开 PowerShell。
-- 进入 `scripts/` 目录。
-- 执行安装脚本：
-  ```powershell
-  .\install_driver.ps1
-  ```
+### 2. 下载并运行本程序
+- 从 [Releases](https://github.com/your-repo/usb-share/releases) 页面下载最新的 `usb_share.zip` 并解压。
+- 直接运行 `usb_share.exe`。
+
+> **注意**: 如果您坚持使用手动安装方式，请参考 `scripts/` 目录下的脚本，但需自行解决驱动数字签名问题。
 
 ---
 
@@ -78,42 +78,43 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 ## 🛠 详细用法
 
 ### 设备发现与连接
-- **自动发现**：只要服务端运行了 `usb_share.exe`，客户端的发现列表就会每 3 秒更新一次。
+- **自动发现**：只要服务端运行了 `usb_share.exe`，客户端的发现列表就会实时更新。
 - **手动连接**：如果自动发现无效（如跨网段），可以直接在地址栏输入服务端的 IP 地址。
 
-### 断线重连
-- 如果网络发生闪断，USB-Share 会自动尝试恢复之前的连接。状态栏会显示 "Reconnecting..."，此时请勿拔掉物理设备。
-
-### 驱动管理
-- 如果您不再需要使用此工具，请运行 `scripts/uninstall_driver.ps1` 以彻底移除虚拟总线驱动，保持系统清洁。
+### 驱动引擎说明
+本程序是 `usbipd-win` 的图形化封装与增强工具。底层共享逻辑由 `usbipd-win` 服务处理，本程序负责：
+- 自动化的广播发现。
+- 直观的 GUI 设备选择。
+- 跨网络的连接管理。
 
 ---
 
 ## 🏗 技术栈
 
-- **核心驱动**: Windows Driver Kit (WDK) / KMDF
-- **底层协议**: USBIP (基于 [usbip-win](https://github.com/cezanne/usbip-win))
+- **核心驱动**: [usbipd-win](https://github.com/dorssel/usbipd-win) (推荐) / [usbip-win](https://github.com/cezanne/usbip-win)
+- **底层协议**: USBIP Protocol
 - **应用逻辑**: C++ 17
 - **UI 框架**: Qt 6 (Widgets)
-- **网络通信**: 原生 TCP Sockets (禁用 Nagle 算法)
+- **网络通信**: 原生 TCP Sockets (禁用 Nagle 算法) + UDP Discovery
 
 ---
 
 ## 💻 开发与构建
 
 ### 准备工作
-- 安装 Visual Studio 2022。
-- 安装 Windows Driver Kit (WDK)。
-- 安装 Qt 6 (包含 Network 和 Widgets 模块)。
+- 安装 [aqtinstall](https://github.com/miurahr/aqtinstall) 进行 Qt 命令行安装（推荐）。
+- 安装 CMake。
+- 安装 MinGW 编译器。
 
 ### 构建步骤
 1. 克隆仓库：
    ```bash
    git clone --recursive https://github.com/your-repo/usb-share.git
    ```
-2. 使用 Visual Studio 打开 `usb_share.sln`。
-3. 配置 CMake 选项指向您的 Qt 安装路径。
-4. 构建项目。
+2. 运行 Windows 自动化编译脚本：
+   ```powershell
+   .\build_windows.ps1
+   ```
 
 ---
 
@@ -121,21 +122,10 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 
 - [x] MVP 核心转发功能
 - [x] 局域网 UDP 自动发现
+- [x] Windows 自动化构建脚本
 - [ ] 系统托盘最小化运行
 - [ ] 传输层数据加密
 - [ ] 访问密码与 IP 白名单
-- [ ] 支持多设备同时批量共享
-
----
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！
-1. Fork 本仓库。
-2. 创建您的特性分支 (`git checkout -b feat/AmazingFeature`)。
-3. 提交您的更改 (`git commit -m 'feat: Add some AmazingFeature'`)。
-4. 推送到分支 (`git push origin feat/AmazingFeature`)。
-5. 开启一个 Pull Request。
 
 ---
 
@@ -148,8 +138,7 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 ## 📞 支持与联系
 
 - **问题反馈**: 请提交 [GitHub Issue](https://github.com/your-repo/usb-share/issues)
-- **作者**: [Your Name/Organization]
-- **致谢**: 感谢 [usbip-win](https://github.com/cezanne/usbip-win) 项目提供的底层驱动支持。
+- **致谢**: 感谢 [usbipd-win](https://github.com/dorssel/usbipd-win) 和 [usbip-win](https://github.com/cezanne/usbip-win) 项目提供的底层支持。
 
 ---
 *保持简单，保持原生。*
