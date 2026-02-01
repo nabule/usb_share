@@ -10,24 +10,11 @@ QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
     QProcess process;
     process.start("usbipd", {"list"});
     if (!process.waitForFinished()) {
-        qDebug() << "CRITICAL: Could not start 'usbipd'. Is it installed and in PATH?";
+        qDebug() << "CRITICAL: Could not start 'usbipd'.";
         return devices;
     }
     
     QString output = QString::fromLocal8Bit(process.readAllStandardOutput());
-    QString err = QString::fromLocal8Bit(process.readAllStandardError());
-    
-    if (!err.isEmpty()) {
-        qDebug() << "usbipd list stderr:" << err;
-    }
-
-    // Logging to a temp file for user debugging
-    QFile logFile("usbipd_output.log");
-    if (logFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        logFile.write(output.toUtf8());
-        logFile.close();
-    }
-
     QStringList lines = output.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     
     bool headerFound = false;
@@ -35,36 +22,36 @@ QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
         line = line.trimmed();
         if (line.isEmpty()) continue;
 
-        // Look for the header to start capturing
         if (line.contains("BUSID") && line.contains("VID:PID")) {
             headerFound = true;
             continue;
         }
 
         if (headerFound) {
-            // Stop if we hit a new section (like Persisted devices)
-            if (line.contains("Persisted:") || line.contains("Currently shared:")) {
-                // We keep going as we want all connected devices, 
-                // but usually "Connected:" is the first section.
+            // If we hit a line that doesn't look like a device (no VID:PID colon), skip
+            if (!line.contains(":")) {
+                if (line.contains("Persisted:") || line.contains("Currently shared:")) continue;
+                // If it's a completely different section, we could break, but let's be safe
+                continue;
             }
 
-            // More flexible Regex
-            // 1: BUSID (e.g. 1-1 or 1-1.2)
-            // 2: VID (4 hex)
-            // 3: PID (4 hex)
-            // 4: Description (anything in middle)
-            // 5: State (at the end)
-            QRegularExpression re("^(\\d+-\\d+(?:\\.\\d+)*)\\s+([0-9a-fA-F]{4}):([0-9a-fA-F]{4})\\s+(.+?)\\s{2,}(.+)$");
-            QRegularExpressionMatch match = re.match(line);
+            // Simple split by multiple spaces
+            QStringList parts = line.split(QRegularExpression("\\s{2,}"), Qt::SkipEmptyParts);
             
-            if (match.hasMatch()) {
+            // Expected parts: BUSID, VID:PID, DEVICE, STATE
+            // Sometimes DEVICE name has spaces, but split(\\s{2,}) should keep it together
+            if (parts.size() >= 4) {
                 UsbDevice dev;
-                dev.busId = match.captured(1);
-                dev.vendorId = match.captured(2).toUShort(nullptr, 16);
-                dev.productId = match.captured(3).toUShort(nullptr, 16);
-                dev.description = match.captured(4).trimmed();
-                QString state = match.captured(5).trimmed().toLower();
+                dev.busId = parts[0].trimmed();
                 
+                QStringList idParts = parts[1].split(":");
+                if (idParts.size() == 2) {
+                    dev.vendorId = idParts[0].toUShort(nullptr, 16);
+                    dev.productId = idParts[1].toUShort(nullptr, 16);
+                }
+                
+                dev.description = parts[2].trimmed();
+                QString state = parts[3].trimmed().toLower();
                 dev.isShared = (state.contains("shared") && !state.contains("not shared")) || 
                                 state.contains("attached");
                 
