@@ -5,7 +5,7 @@
     - [ ] 配置 Visual Studio WDK 开发环境
     - [ ] 导入 usbip-win 源代码并建立本地编译链
     - [ ] 编写简单的驱动安装/卸载脚本以供开发测试
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Environment & Driver Scaffolding' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Driver Scaffolding' (Protocol in workflow.md) [checkpoint: 664b145]
 
 ## Phase 2: Core Logic Implementation
 - [ ] Task: 实现 USB 导出器 (Exporter/Stub) 逻辑
