@@ -11,7 +11,7 @@
 - [x] Task: 实现 USB 导出器 (Exporter/Stub) 逻辑 8978ce2
     - [ ] 编写测试以验证 USB 设备列表获取功能
     - [ ] 实现 stub 驱动的绑定与解绑控制逻辑
-- [ ] Task: 实现网络传输协议层
+- [x] Task: 实现网络传输协议层 4fcdd21
     - [ ] 实现基于 TCP 的数据流封装与解析逻辑
     - [ ] 编写网络连接管理的单元测试
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Core Logic Implementation' (Protocol in workflow.md)
