@@ -2,65 +2,79 @@
 #include <QProcess>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QFile>
+#include <QStandardPaths>
 
 QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
     QList<UsbDevice> devices;
     
     QProcess process;
+    // Try to call usbipd. We assume it's in PATH or standard location.
     process.start("usbipd", {"list"});
     if (!process.waitForFinished(5000)) {
-        return devices;
+        // Fallback: try absolute path if not in PATH
+        process.start("C:\\Program Files\\usbipd-win\\usbipd.exe", {"list"});
+        if (!process.waitForFinished(5000)) {
+            qDebug() << "CRITICAL: usbipd not found.";
+            return devices;
+        }
     }
     
     QByteArray rawOutput = process.readAllStandardOutput();
+    // Use Local8Bit for Windows Console output (likely GBK on Chinese Windows)
     QString output = QString::fromLocal8Bit(rawOutput);
     if (output.trimmed().isEmpty()) {
-        output = QString::fromUtf8(rawOutput);
+        output = QString::fromUtf8(rawOutput); // Fallback to UTF-8
+    }
+
+    // DEBUG: Write output to file to help user diagnose
+    QFile debugFile("usbipd_debug.txt");
+    if (debugFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        debugFile.write("-- - RAW OUTPUT START ---\
+");
+        debugFile.write(rawOutput);
+        debugFile.write("\n--- DECODED OUTPUT START ---\
+");
+        debugFile.write(output.toUtf8());
+        debugFile.close();
     }
 
     QStringList lines = output.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     
-    // Improved Regex:
-    // 1: BUSID (e.g., 1-1)
-    // 2: VID (4 hex)
-    // 3: PID (4 hex)
-    // 4: The rest (Device + State)
-    QRegularExpression lineRe("^(\\d+-\\d+)\\s+([0-9a-fA-F]{4}):([0-9a-fA-F]{4})\\s+(.+)$");
+    // Robust parsing:
+    // We look for lines containing a "xxxx:xxxx" pattern
+    QRegularExpression idRegex("([0-9a-fA-F]{4}):([0-9a-fA-F]{4})");
 
     for (const QString &line : lines) {
-        QString trimmed = line.trimmed();
-        QRegularExpressionMatch match = lineRe.match(trimmed);
+        QString l = line.trimmed();
+        QRegularExpressionMatch idMatch = idRegex.match(l);
         
-        if (match.hasMatch()) {
+        if (idMatch.hasMatch()) {
+            int idPos = l.indexOf(idMatch.captured(0));
+            if (idPos <= 0) continue;
+
             UsbDevice dev;
-            dev.busId = match.captured(1);
-            dev.vendorId = match.captured(2).toUShort(nullptr, 16);
-            dev.productId = match.captured(3).toUShort(nullptr, 16);
+            // 1. Bus ID is everything before the VID:PID
+            dev.busId = l.left(idPos).trimmed();
             
-            QString rest = match.captured(4).trimmed();
+            // 2. VID/PID
+            dev.vendorId = idMatch.captured(1).toUShort(nullptr, 16);
+            dev.productId = idMatch.captured(2).toUShort(nullptr, 16);
             
-            // State is at the end. Usually "Not shared", "Shared", or "Attached"
-            // We search for common states at the end of the string
-            if (rest.endsWith("Not shared", Qt::CaseInsensitive)) {
-                dev.isShared = false;
-                dev.description = rest.left(rest.length() - 10).trimmed();
-            } else if (rest.endsWith("Shared", Qt::CaseInsensitive)) {
-                dev.isShared = true;
-                dev.description = rest.left(rest.length() - 6).trimmed();
-            } else if (rest.endsWith("Attached", Qt::CaseInsensitive)) {
-                dev.isShared = true;
-                dev.description = rest.left(rest.length() - 8).trimmed();
+            // 3. Everything after VID:PID (9 chars) is "Description + State"
+            QString rest = l.mid(idPos + 9).trimmed();
+            
+            // 4. Split Description and State. State is usually at the end after multiple spaces.
+            // We search for the last occurrence of 2 or more spaces.
+            int stateStart = rest.lastIndexOf(QRegularExpression("\\s{2,}"));
+            if (stateStart != -1) {
+                dev.description = rest.left(stateStart).trimmed();
+                QString stateStr = rest.mid(stateStart).trimmed().toLower();
+                dev.isShared = stateStr.contains("shared") || stateStr.contains("attached");
             } else {
-                // Fallback for Chinese or other states: assume the last "word" is the state
-                int lastSpace = rest.lastIndexOf(QRegularExpression("\\s{2,}"));
-                if (lastSpace > 0) {
-                    dev.description = rest.left(lastSpace).trimmed();
-                    QString state = rest.mid(lastSpace).trimmed().toLower();
-                    dev.isShared = state.contains("shared") || state.contains("attached");
-                } else {
-                    dev.description = rest;
-                    dev.isShared = false;
-                }
+                // Fallback: just take the whole thing as description
+                dev.description = rest;
+                dev.isShared = false;
             }
             
             devices.append(dev);
@@ -81,6 +95,9 @@ bool WindowsUsbDeviceManager::unbindDevice(const QString& busId) {
 bool WindowsUsbDeviceManager::executeUsbipCommand(const QStringList& args) {
     QProcess process;
     process.start("usbipd", args);
-    process.waitForFinished();
+    if (!process.waitForFinished()) {
+        process.start("C:\\Program Files\\usbipd-win\\usbipd.exe", args);
+        process.waitForFinished();
+    }
     return (process.exitCode() == 0);
 }
