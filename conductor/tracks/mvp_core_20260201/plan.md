@@ -23,4 +23,4 @@
 - [x] Task: 端到端集成测试 ba35117
     - [ ] 验证 A 机分享、B 机识别的完整链路
     - [ ] 验证自动重连逻辑
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: GUI & Integration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: GUI & Integration' (Protocol in workflow.md) [checkpoint: 8c7e078]
