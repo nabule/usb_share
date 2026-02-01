@@ -53,8 +53,6 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 - 从 [Releases](https://github.com/your-repo/usb-share/releases) 页面下载最新的 `usb_share.zip` 并解压。
 - 直接运行 `usb_share.exe`。
 
-> **注意**: 如果您坚持使用手动安装方式，请参考 `scripts/` 目录下的脚本，但需自行解决驱动数字签名问题。
-
 ---
 
 ## 💡 快速开始
@@ -75,20 +73,6 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 
 ---
 
-## 🛠 详细用法
-
-### 设备发现与连接
-- **自动发现**：只要服务端运行了 `usb_share.exe`，客户端的发现列表就会实时更新。
-- **手动连接**：如果自动发现无效（如跨网段），可以直接在地址栏输入服务端的 IP 地址。
-
-### 驱动引擎说明
-本程序是 `usbipd-win` 的图形化封装与增强工具。底层共享逻辑由 `usbipd-win` 服务处理，本程序负责：
-- 自动化的广播发现。
-- 直观的 GUI 设备选择。
-- 跨网络的连接管理。
-
----
-
 ## 🏗 技术栈
 
 - **核心驱动**: [usbipd-win](https://github.com/dorssel/usbipd-win) (推荐) / [usbip-win](https://github.com/cezanne/usbip-win)
@@ -101,20 +85,51 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 
 ## 💻 开发与构建
 
-### 准备工作
-- 安装 [aqtinstall](https://github.com/miurahr/aqtinstall) 进行 Qt 命令行安装（推荐）。
-- 安装 CMake。
-- 安装 MinGW 编译器。
+如果您是开发者，想要从源码构建本项目，请参考以下 **Windows 最小化编译环境搭建** 指南。
 
-### 构建步骤
-1. 克隆仓库：
+### 1. 搭建最小化编译环境 (无 IDE 模式)
+
+我们推荐使用 `aqtinstall` 命令行工具，这可以避免下载数 GB 的 Qt Creator IDE，仅安装必要的库和工具链。
+
+#### A. 安装 aqtinstall
+首先确保已安装 Python，然后在 PowerShell 中运行：
+```powershell
+pip install aqtinstall
+```
+
+#### B. 安装 Qt6、MinGW 与 CMake
+运行以下指令将环境安装到 `C:\Qt`（或您自定义的目录）：
+```powershell
+# 1. 安装 Qt 6.6.2 核心库 (针对 MinGW 64位)
+python -m aqt install-qt windows desktop 6.6.2 win64_mingw --outputdir C:\Qt
+
+# 2. 安装 MinGW 编译器工具
+python -m aqt install-tool windows desktop tools_mingw90 --outputdir C:\Qt
+
+# 3. 安装 CMake 工具
+python -m aqt install-tool windows desktop tools_cmake --outputdir C:\Qt
+```
+
+### 2. 配置环境变量
+
+为了让构建脚本和命令行能够识别工具，请将以下路径添加到系统的 **Path** 环境变量中：
+- `C:\Qt\6.6.2\mingw_64\bin`
+- `C:\Qt\Tools\mingw1120_64\bin`
+- `C:\Qt\Tools\CMake\bin`
+
+### 3. 构建项目
+
+1. **克隆仓库**：
    ```bash
    git clone --recursive https://github.com/your-repo/usb-share.git
    ```
-2. 运行 Windows 自动化编译脚本：
+2. **执行自动化构建脚本**：
+   本项目提供了一个全自动脚本，能够自动识别 `C:\Qt` 路径并处理依赖打包：
    ```powershell
    .\build_windows.ps1
    ```
+3. **获取产物**：
+   编译完成后，所有的可执行文件及依赖 DLL 都会存放在项目根目录的 **`dist/`** 文件夹下。您直接压缩该文件夹即可发布。
 
 ---
 
@@ -123,9 +138,9 @@ USB-Share 旨在解决远程办公或多机协作场景下物理 USB 设备无�
 - [x] MVP 核心转发功能
 - [x] 局域网 UDP 自动发现
 - [x] Windows 自动化构建脚本
+- [x] 基于 `usbipd-win` 的解析逻辑优化
 - [ ] 系统托盘最小化运行
 - [ ] 传输层数据加密
-- [ ] 访问密码与 IP 白名单
 
 ---
 
