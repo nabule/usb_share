@@ -14,7 +14,7 @@
 - [x] Task: 实现网络传输协议层 4fcdd21
     - [ ] 实现基于 TCP 的数据流封装与解析逻辑
     - [ ] 编写网络连接管理的单元测试
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Core Logic Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Core Logic Implementation' (Protocol in workflow.md) [checkpoint: 286e033]
 
 ## Phase 3: GUI & Integration
 - [ ] Task: 构建 Qt 用户界面
