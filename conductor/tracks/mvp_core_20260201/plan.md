@@ -1,7 +1,7 @@
 # Implementation Plan - MVP Core
 
 ## Phase 1: Environment & Driver Scaffolding
-- [ ] Task: 环境搭建与驱动集成
+- [x] Task: 环境搭建与驱动集成 8760b1d
     - [ ] 配置 Visual Studio WDK 开发环境
     - [ ] 导入 usbip-win 源代码并建立本地编译链
     - [ ] 编写简单的驱动安装/卸载脚本以供开发测试
