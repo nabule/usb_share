@@ -42,7 +42,15 @@ Write-Host "Building..."
 cmake --build . --parallel
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Build Successful! Executable is in: $BuildDir"
+    Write-Host "`nRunning windeployqt to package dependencies..." -ForegroundColor Cyan
+    $WinDeployQt = Get-ChildItem -Path $SearchRoot -Filter "windeployqt.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+    if ($WinDeployQt) {
+        & $WinDeployQt --no-compiler-runtime usb_share.exe
+    } else {
+        Write-Host "Warning: windeployqt.exe not found. You might need to manually copy Qt DLLs." -ForegroundColor Yellow
+    }
+
+    Write-Host "`nBuild Successful! Executable is in: $BuildDir" -ForegroundColor Green
 } else {
     Write-Host "Build Failed."
 }

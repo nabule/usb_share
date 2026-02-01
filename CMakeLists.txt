@@ -32,7 +32,7 @@ target_link_libraries(core_lib PUBLIC Qt6::Core Qt6::Network)
 target_include_directories(core_lib PUBLIC src/core)
 
 # Main Executable
-add_executable(usb_share
+add_executable(usb_share WIN32
     src/main.cpp
     src/gui/MainWindow.h
     src/gui/MainWindow.cpp
