@@ -20,7 +20,7 @@
 - [x] Task: 构建 Qt 用户界面 0086df0
     - [ ] 实现设备列表显示的 UI 模块
     - [ ] 实现连接配置对话框
-- [ ] Task: 端到端集成测试
+- [x] Task: 端到端集成测试 ba35117
     - [ ] 验证 A 机分享、B 机识别的完整链路
     - [ ] 验证自动重连逻辑
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: GUI & Integration' (Protocol in workflow.md)
