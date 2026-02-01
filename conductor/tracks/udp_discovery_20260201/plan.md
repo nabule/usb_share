@@ -10,7 +10,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Core Network Logic' (Protocol in workflow.md) [checkpoint: eb8f046]
 
 ## Phase 2: GUI Integration
-- [ ] Task: 更新 MainWindow UI
+- [x] Task: 更新 MainWindow UI 4bea009
     - [ ] 添加设备发现列表控件 (Remote Tab)
     - [ ] 集成 UdpListener 到 UI，实现点击连接功能
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: GUI Integration' (Protocol in workflow.md)
