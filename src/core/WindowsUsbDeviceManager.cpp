@@ -3,76 +3,67 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include <QFile>
-#include <QStandardPaths>
 
 QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
     QList<UsbDevice> devices;
     
     QProcess process;
-    // Try to call usbipd. We assume it's in PATH or standard location.
     process.start("usbipd", {"list"});
     if (!process.waitForFinished(5000)) {
-        // Fallback: try absolute path if not in PATH
         process.start("C:\\Program Files\\usbipd-win\\usbipd.exe", {"list"});
-        if (!process.waitForFinished(5000)) {
-            qDebug() << "CRITICAL: usbipd not found.";
-            return devices;
-        }
+        if (!process.waitForFinished(5000)) return devices;
     }
     
     QByteArray rawOutput = process.readAllStandardOutput();
-    // Use Local8Bit for Windows Console output (likely GBK on Chinese Windows)
-    QString output = QString::fromLocal8Bit(rawOutput);
-    if (output.trimmed().isEmpty()) {
-        output = QString::fromUtf8(rawOutput); // Fallback to UTF-8
+    
+    // 优先尝试 UTF-8 编码 (usbipd-win 默认通常是 UTF-8)
+    QString output = QString::fromUtf8(rawOutput);
+    
+    // 如果 UTF-8 解析出来的字符串包含太多乱码（替换字符），则尝试 Local8Bit
+    if (output.count(QChar::ReplacementCharacter) > 10 || output.trimmed().isEmpty()) {
+        output = QString::fromLocal8Bit(rawOutput);
     }
 
-    // DEBUG: Write output to file to help user diagnose
+    // 调试日志更新：确保我们能看到解析后的真实文本
     QFile debugFile("usbipd_debug.txt");
     if (debugFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        debugFile.write("-- - RAW OUTPUT START ---\
-");
-        debugFile.write(rawOutput);
-        debugFile.write("\n--- DECODED OUTPUT START ---\
-");
+        debugFile.write("-- - DECODED OUTPUT ---\n");
         debugFile.write(output.toUtf8());
         debugFile.close();
     }
 
     QStringList lines = output.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     
-    // Robust parsing:
-    // We look for lines containing a "xxxx:xxxx" pattern
-    QRegularExpression idRegex("([0-9a-fA-F]{4}):([0-9a-fA-F]{4})");
+    // 更加宽松的正则匹配
+    // 1: BUSID (数字-数字)
+    // 2: VID:PID (4位十六进制:4位十六进制)
+    QRegularExpression lineRe("(\d+-\d+)\\s+([0-9a-fA-F]{4}:[0-9a-fA-F]{4})\\s+(.+)$");
 
     for (const QString &line : lines) {
         QString l = line.trimmed();
-        QRegularExpressionMatch idMatch = idRegex.match(l);
+        QRegularExpressionMatch match = lineRe.match(l);
         
-        if (idMatch.hasMatch()) {
-            int idPos = l.indexOf(idMatch.captured(0));
-            if (idPos <= 0) continue;
-
+        if (match.hasMatch()) {
             UsbDevice dev;
-            // 1. Bus ID is everything before the VID:PID
-            dev.busId = l.left(idPos).trimmed();
+            dev.busId = match.captured(1);
             
-            // 2. VID/PID
-            dev.vendorId = idMatch.captured(1).toUShort(nullptr, 16);
-            dev.productId = idMatch.captured(2).toUShort(nullptr, 16);
+            QStringList idParts = match.captured(2).split(':');
+            dev.vendorId = idParts[0].toUShort(nullptr, 16);
+            dev.productId = idParts[1].toUShort(nullptr, 16);
             
-            // 3. Everything after VID:PID (9 chars) is "Description + State"
-            QString rest = l.mid(idPos + 9).trimmed();
+            QString rest = match.captured(3).trimmed();
             
-            // 4. Split Description and State. State is usually at the end after multiple spaces.
-            // We search for the last occurrence of 2 or more spaces.
-            int stateStart = rest.lastIndexOf(QRegularExpression("\\s{2,}"));
-            if (stateStart != -1) {
-                dev.description = rest.left(stateStart).trimmed();
-                QString stateStr = rest.mid(stateStart).trimmed().toLower();
-                dev.isShared = stateStr.contains("shared") || stateStr.contains("attached");
+            // 简单的后端匹配：寻找常见的状态字符串
+            if (rest.contains("Not shared", Qt::CaseInsensitive)) {
+                dev.isShared = false;
+                dev.description = rest.replace("Not shared", "", Qt::CaseInsensitive).trimmed();
+            } else if (rest.contains("Shared", Qt::CaseInsensitive) || rest.contains("Attached", Qt::CaseInsensitive)) {
+                dev.isShared = true;
+                // 移除状态词以获取纯描述
+                dev.description = rest.replace("Shared", "", Qt::CaseInsensitive)
+                                      .replace("Attached", "", Qt::CaseInsensitive).trimmed();
             } else {
-                // Fallback: just take the whole thing as description
+                // 如果是中文环境或其他状态，默认取前半部分
                 dev.description = rest;
                 dev.isShared = false;
             }
