@@ -10,7 +10,7 @@ public:
     bool unbindDevice(const QString& busId) override;
 
 private:
-    // Helper to call usbip.exe or driver ioctls
+    // Helper to call usbipd.exe or driver ioctls
     bool executeUsbipCommand(const QStringList& args);
 };
 

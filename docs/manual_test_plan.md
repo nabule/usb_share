@@ -12,7 +12,7 @@
    - Go to "Local Devices" tab.
    - Click "Refresh". Verify the USB device appears.
    - (Note: Sharing logic is currently stubbed/manual via usbip CLI in this MVP Phase).
-   - Manually run `usbip.exe bind -b <busid>` (or use UI if implemented).
+   - Manually run `usbipd bind --busid <busid>` (or use UI if implemented).
    - Start the listener (implied by app start).
 
 2. **PC B (Client):**
