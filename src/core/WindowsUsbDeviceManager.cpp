@@ -15,61 +15,63 @@ QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
     }
     
     QByteArray rawOutput = process.readAllStandardOutput();
-    
-    // 优先尝试 UTF-8 编码 (usbipd-win 默认通常是 UTF-8)
+    // 优先尝试 UTF-8 (usbipd-win 4.x 默认)
     QString output = QString::fromUtf8(rawOutput);
-    
-    // 如果 UTF-8 解析出来的字符串包含太多乱码（替换字符），则尝试 Local8Bit
     if (output.count(QChar::ReplacementCharacter) > 10 || output.trimmed().isEmpty()) {
         output = QString::fromLocal8Bit(rawOutput);
     }
 
-    // 调试日志更新：确保我们能看到解析后的真实文本
-    QFile debugFile("usbipd_debug.txt");
-    if (debugFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        debugFile.write("-- - DECODED OUTPUT ---\n");
-        debugFile.write(output.toUtf8());
-        debugFile.close();
-    }
-
     QStringList lines = output.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     
-    // 更加宽松的正则匹配
-    // 1: BUSID (数字-数字)
-    // 2: VID:PID (4位十六进制:4位十六进制)
-    QRegularExpression lineRe("(\d+-\d+)\\s+([0-9a-fA-F]{4}:[0-9a-fA-F]{4})\\s+(.+)$");
+    // VID:PID regex (e.g. 046d:c52f)
+    QRegularExpression idRegex("([0-9a-fA-F]{4}):([0-9a-fA-F]{4})");
 
     for (const QString &line : lines) {
         QString l = line.trimmed();
-        QRegularExpressionMatch match = lineRe.match(l);
+        QRegularExpressionMatch idMatch = idRegex.match(l);
         
-        if (match.hasMatch()) {
+        if (idMatch.hasMatch()) {
             UsbDevice dev;
-            dev.busId = match.captured(1);
+            QString fullId = idMatch.captured(0); // "046d:c52f"
+            int idPos = l.indexOf(fullId);
             
-            QStringList idParts = match.captured(2).split(':');
-            dev.vendorId = idParts[0].toUShort(nullptr, 16);
-            dev.productId = idParts[1].toUShort(nullptr, 16);
+            // 1. BUSID: VID:PID 左边的所有内容
+            dev.busId = l.left(idPos).trimmed();
+            if (dev.busId.isEmpty()) continue; // 忽略没有 BUSID 的行
             
-            QString rest = match.captured(3).trimmed();
+            // 2. VID/PID
+            dev.vendorId = idMatch.captured(1).toUShort(nullptr, 16);
+            dev.productId = idMatch.captured(2).toUShort(nullptr, 16);
             
-            // 简单的后端匹配：寻找常见的状态字符串
-            if (rest.contains("Not shared", Qt::CaseInsensitive)) {
+            // 3. 描述与状态: VID:PID 右边的所有内容 (ID 长度通常为 9)
+            QString rest = l.mid(idPos + fullId.length()).trimmed();
+            
+            // 4. 提取状态: 检查结尾
+            QString lowerRest = rest.toLower();
+            if (lowerRest.endsWith("not shared")) {
                 dev.isShared = false;
-                dev.description = rest.replace("Not shared", "", Qt::CaseInsensitive).trimmed();
-            } else if (rest.contains("Shared", Qt::CaseInsensitive) || rest.contains("Attached", Qt::CaseInsensitive)) {
+                dev.description = rest.left(rest.length() - 10).trimmed();
+            } else if (lowerRest.endsWith("shared")) {
                 dev.isShared = true;
-                // 移除状态词以获取纯描述
-                dev.description = rest.replace("Shared", "", Qt::CaseInsensitive)
-                                      .replace("Attached", "", Qt::CaseInsensitive).trimmed();
+                dev.description = rest.left(rest.length() - 6).trimmed();
+            } else if (lowerRest.endsWith("attached")) {
+                dev.isShared = true;
+                dev.description = rest.left(rest.length() - 8).trimmed();
             } else {
-                // 如果是中文环境或其他状态，默认取前半部分
+                // 兜底方案：如果状态不是英文或格式不对
                 dev.description = rest;
                 dev.isShared = false;
             }
             
             devices.append(dev);
         }
+    }
+
+    // 更新调试日志，记录解析到了多少个设备
+    QFile debugFile("usbipd_debug.txt");
+    if (debugFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        debugFile.write(QString("\n--- PARSER SUMMARY ---\nParsed Devices: %1\n").arg(devices.size()).toUtf8());
+        debugFile.close();
     }
     
     return devices;
