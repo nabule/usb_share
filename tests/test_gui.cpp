@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include "../src/gui/MainWindow.h"
 
 class TestGui : public QObject {
