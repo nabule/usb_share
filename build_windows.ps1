@@ -46,6 +46,16 @@ if ($LASTEXITCODE -eq 0) {
     $WinDeployQt = Get-ChildItem -Path $SearchRoot -Filter "windeployqt.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
     if ($WinDeployQt) {
         & $WinDeployQt --no-compiler-runtime usb_share.exe
+        
+        Write-Host "Copying MinGW runtime DLLs..." -ForegroundColor Cyan
+        $MinGwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
+        foreach ($dll in $MinGwDlls) {
+            $dllSource = Get-ChildItem -Path $MinGWBin -Filter $dll -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            if ($dllSource) {
+                Copy-Item $dllSource . -Force
+                Write-Host "Copied $dll"
+            }
+        }
     } else {
         Write-Host "Warning: windeployqt.exe not found. You might need to manually copy Qt DLLs." -ForegroundColor Yellow
     }
