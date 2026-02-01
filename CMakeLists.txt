@@ -17,6 +17,8 @@ add_library(core_lib
     src/core/NetworkTransport.cpp
     src/core/UdpBroadcaster.h
     src/core/UdpBroadcaster.cpp
+    src/core/UdpListener.h
+    src/core/UdpListener.cpp
 )
 
 target_link_libraries(core_lib PRIVATE Qt6::Core Qt6::Network)
