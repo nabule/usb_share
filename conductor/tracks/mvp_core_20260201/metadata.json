@@ -1,0 +1,8 @@
+{
+  "track_id": "mvp_core_20260201",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-01T15:00:00Z",
+  "updated_at": "2026-02-01T15:00:00Z",
+  "description": "MVP：基于 USBIP-WIN 和 Qt 的底层 USB TCP/IP 共享核心实现"
+}
