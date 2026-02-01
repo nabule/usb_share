@@ -9,11 +9,9 @@ QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
     QProcess process;
     process.start("usbipd", {"list"});
     if (!process.waitForFinished(5000)) {
-        qDebug() << "CRITICAL: usbipd list timeout or failed to start.";
         return devices;
     }
     
-    // Try Local8Bit first, then UTF-8
     QByteArray rawOutput = process.readAllStandardOutput();
     QString output = QString::fromLocal8Bit(rawOutput);
     if (output.trimmed().isEmpty()) {
@@ -22,39 +20,50 @@ QList<UsbDevice> WindowsUsbDeviceManager::enumerateDevices() {
 
     QStringList lines = output.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
     
-    // VID:PID regex (e.g. 046d:c52b)
-    QRegularExpression idRegex("([0-9a-fA-F]{4}):([0-9a-fA-F]{4})");
+    // Improved Regex:
+    // 1: BUSID (e.g., 1-1)
+    // 2: VID (4 hex)
+    // 3: PID (4 hex)
+    // 4: The rest (Device + State)
+    QRegularExpression lineRe("^(\\d+-\\d+)\\s+([0-9a-fA-F]{4}):([0-9a-fA-F]{4})\\s+(.+)$");
 
     for (const QString &line : lines) {
         QString trimmed = line.trimmed();
+        QRegularExpressionMatch match = lineRe.match(trimmed);
         
-        QRegularExpressionMatch idMatch = idRegex.match(trimmed);
-        if (idMatch.hasMatch()) {
-            // Found a potential device line
-            QStringList parts = trimmed.split(QRegularExpression("\s+"), Qt::SkipEmptyParts);
+        if (match.hasMatch()) {
+            UsbDevice dev;
+            dev.busId = match.captured(1);
+            dev.vendorId = match.captured(2).toUShort(nullptr, 16);
+            dev.productId = match.captured(3).toUShort(nullptr, 16);
             
-            // Expected format: BUSID  VID:PID  DEVICE_NAME...  STATE
-            if (parts.size() >= 3) {
-                UsbDevice dev;
-                dev.busId = parts[0];
-                dev.vendorId = idMatch.captured(1).toUShort(nullptr, 16);
-                dev.productId = idMatch.captured(2).toUShort(nullptr, 16);
-                
-                // State is usually at the very end
-                QString state = parts.last().toLower();
-                dev.isShared = (state.contains("shared") && !state.contains("not")) || state.contains("attached");
-                
-                // Description is everything between VID:PID and State
-                int idPos = trimmed.indexOf(idMatch.captured(0));
-                int statePos = trimmed.lastIndexOf(parts.last());
-                if (statePos > idPos + 10) {
-                    dev.description = trimmed.mid(idPos + 10, statePos - (idPos + 10)).trimmed();
+            QString rest = match.captured(4).trimmed();
+            
+            // State is at the end. Usually "Not shared", "Shared", or "Attached"
+            // We search for common states at the end of the string
+            if (rest.endsWith("Not shared", Qt::CaseInsensitive)) {
+                dev.isShared = false;
+                dev.description = rest.left(rest.length() - 10).trimmed();
+            } else if (rest.endsWith("Shared", Qt::CaseInsensitive)) {
+                dev.isShared = true;
+                dev.description = rest.left(rest.length() - 6).trimmed();
+            } else if (rest.endsWith("Attached", Qt::CaseInsensitive)) {
+                dev.isShared = true;
+                dev.description = rest.left(rest.length() - 8).trimmed();
+            } else {
+                // Fallback for Chinese or other states: assume the last "word" is the state
+                int lastSpace = rest.lastIndexOf(QRegularExpression("\\s{2,}"));
+                if (lastSpace > 0) {
+                    dev.description = rest.left(lastSpace).trimmed();
+                    QString state = rest.mid(lastSpace).trimmed().toLower();
+                    dev.isShared = state.contains("shared") || state.contains("attached");
                 } else {
-                    dev.description = "USB Device";
+                    dev.description = rest;
+                    dev.isShared = false;
                 }
-                
-                devices.append(dev);
             }
+            
+            devices.append(dev);
         }
     }
     
