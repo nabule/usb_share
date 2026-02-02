@@ -20,7 +20,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Client Integration (POC)' (Protocol in workflow.md) [checkpoint: 15e4a64]
 
 ## Phase 3: Documentation & Verification
-- [ ] Task: 编写集成与使用文档
-    - [ ] 更新 `README.md`，增加关于 usbip-win2 驱动安装的说明。
-    - [ ] 编写《Windows 客户端互联指南》(docs/windows_client_guide.md)。
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Documentation & Verification' (Protocol in workflow.md)
+- [x] Task: 编写集成与使用文档
+    - [x] 更新 `README.md`，增加关于 usbip-win2 驱动安装的说明。
+    - [x] 编写《Windows 客户端互联指南》(docs/windows_client_guide.md)。
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Documentation & Verification' (Protocol in workflow.md) [checkpoint: a5bb26e]
