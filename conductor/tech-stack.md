@@ -4,9 +4,11 @@
 - **Language:** C/C++
 - **Framework:** Windows Driver Kit (WDK)
 - **Model:** Kernel-Mode Driver Framework (KMDF) - 用于处理底层的 USB 请求块 (URB) 转发。
-- **Base Implementation:** **USBIP-WIN** (Open Source)
-    - 利用其现有的 `usbip-vbus` (虚拟总线驱动) 和 `usbip-stub` (功能驱动桩) 进行定制开发。
-    - 采用其定义的 TCP 传输协议以确保标准兼容性。
+- **Base Implementation:**
+    - **Server (Stub):** **USBIP-WIN** (Open Source) / `usbipd-win` (Standard Stub)
+    - **Client (VHCI):** **usbip-win2** (VHCI Driver + Tools)
+        - 采用其 WHLK 认证级别的 VHCI 驱动 (`usbip2_ude.sys`) 以支持 Windows 10+ 客户端功能。
+    - 采用标准 TCP 传输协议 (USBIP v1.1.1) 以确保互通性。
 
 ## 2. User Interface & Control App
 - **Language:** C++
