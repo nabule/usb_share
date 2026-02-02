@@ -54,6 +54,7 @@ endfunction()
 
 add_qt_test(test_usb_export tests/test_usb_export.cpp)
 add_qt_test(test_network_transport tests/test_network_transport.cpp)
+add_qt_test(test_reproduce_issue tests/test_reproduce_issue.cpp)
 add_qt_test(test_udp_discovery tests/test_udp_discovery.cpp)
 
 # Manual GUI test
