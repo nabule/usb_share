@@ -25,6 +25,8 @@ add_library(core_lib STATIC
     src/core/UdpBroadcaster.cpp
     src/core/UdpListener.h
     src/core/UdpListener.cpp
+    src/core/UsbIpWin2Client.h
+    src/core/UsbIpWin2Client.cpp
 )
 
 # Use PUBLIC to propagate include directories and libraries to dependents
@@ -55,6 +57,7 @@ endfunction()
 add_qt_test(test_usb_export tests/test_usb_export.cpp)
 add_qt_test(test_network_transport tests/test_network_transport.cpp)
 add_qt_test(test_reproduce_issue tests/test_reproduce_issue.cpp)
+add_qt_test(test_usbip_win2_client tests/test_usbip_win2_client.cpp)
 add_qt_test(test_udp_discovery tests/test_udp_discovery.cpp)
 
 # Manual GUI test
