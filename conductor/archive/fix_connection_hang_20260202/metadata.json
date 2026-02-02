@@ -1,0 +1,8 @@
+{
+  "track_id": "fix_connection_hang_20260202",
+  "type": "bug",
+  "status": "new",
+  "created_at": "2026-02-02T10:00:00Z",
+  "updated_at": "2026-02-02T10:00:00Z",
+  "description": "现在存在问题，无法A/B机器无法连接。B可以看到A，点连接一直在连接中。"
+}
