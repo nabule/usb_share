@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock, mock_open, ANY
 import sys
 import os
 from pathlib import Path
@@ -26,19 +26,22 @@ class TestSetupCrossCompile(unittest.TestCase):
         
         setup_cross_compile.install_system_deps()
         
-        mock_run.assert_any_call(["sudo", "apt-get", "update"])
-        mock_run.assert_any_call(["sudo", "apt-get", "install", "-y", "cmake", "mingw-w64", "ninja-build"])
+        # 允许 shell 参数的存在
+        mock_run.assert_any_call(["sudo", "apt-get", "update"], shell=False)
+        mock_run.assert_any_call(["sudo", "apt-get", "install", "-y", "cmake", "mingw-w64", "ninja-build"], shell=False)
 
     @patch('subprocess.check_call')
     def test_install_qt_libs(self, mock_run):
-        setup_cross_compile.install_qt_libs()
+        # 模拟 INSTALL_DIR 不存在或已存在
+        with patch('pathlib.Path.mkdir') as mock_mkdir:
+            setup_cross_compile.install_qt_libs()
         
         expected_cmd = [
             sys.executable, "-m", "aqt", "install-qt",
             "windows", "desktop", setup_cross_compile.QT_VERSION, setup_cross_compile.QT_ARCH,
             "--outputdir", str(setup_cross_compile.INSTALL_DIR)
         ]
-        mock_run.assert_called_with(expected_cmd)
+        mock_run.assert_called_with(expected_cmd, shell=False)
 
     @patch('builtins.open', new_callable=mock_open)
     @patch('shutil.which')
@@ -56,6 +59,7 @@ class TestSetupCrossCompile(unittest.TestCase):
         full_content = "".join(calls)
         self.assertIn("CMAKE_SYSTEM_NAME Windows", full_content)
         self.assertIn("CMAKE_CXX_COMPILER", full_content)
+        self.assertIn("qt_env/6.6.2/mingw_64", full_content)
 
 if __name__ == '__main__':
     unittest.main()
