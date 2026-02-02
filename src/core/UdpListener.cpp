@@ -3,6 +3,7 @@
 #include <QJsonObject>
 #include <QTimer>
 #include <QtNetwork/QNetworkDatagram>
+#include <QDebug>
 
 UdpListener::UdpListener(QObject *parent) : QObject(parent) {
     udpSocket = new QUdpSocket(this);
@@ -13,11 +14,13 @@ UdpListener::UdpListener(QObject *parent) : QObject(parent) {
 }
 
 void UdpListener::start() {
+    qDebug() << "[UdpListener] Starting listener on port 3241";
     udpSocket->bind(3241, QUdpSocket::ShareAddress);
     cleanupTimer->start(5000); // Check for stale devices every 5s
 }
 
 void UdpListener::stop() {
+    qDebug() << "[UdpListener] Stopping listener";
     udpSocket->close();
     cleanupTimer->stop();
 }
@@ -37,7 +40,10 @@ bool UdpListener::processDatagram(const QByteArray &data, const QHostAddress &se
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
     
-    if (error.error != QJsonParseError::NoError) return false;
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "[UdpListener] Failed to parse JSON from" << sender.toString() << ":" << error.errorString();
+        return false;
+    }
     if (!doc.isObject()) return false;
     
     QJsonObject obj = doc.object();
@@ -64,6 +70,7 @@ bool UdpListener::processDatagram(const QByteArray &data, const QHostAddress &se
     }
     
     if (!found) {
+        qDebug() << "[UdpListener] New device discovered:" << device.hostname << device.ip;
         knownDevices.append(device);
         emit deviceDiscovered(device);
     }
