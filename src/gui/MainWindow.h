@@ -26,6 +26,9 @@ private slots:
     void onShareClicked(); // Context menu action
     void onDiscoveredDeviceClicked(QTreeWidgetItem *item, int column);
     void updateDiscoveryList();
+    void onTransportConnected();
+    void onTransportError(QAbstractSocket::SocketError error);
+    void onConnectionTimeout();
 
 private:
     void setupUi();
@@ -42,6 +45,7 @@ private:
     NetworkTransport *transport;
     UdpListener *udpListener;
     UdpBroadcaster *udpBroadcaster;
+    QTimer *connectionTimer;
 };
 
 #endif // MAINWINDOW_H

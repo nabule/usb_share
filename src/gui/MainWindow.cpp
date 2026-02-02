@@ -8,12 +8,16 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QHeaderView>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     deviceManager = new WindowsUsbDeviceManager();
     transport = new NetworkTransport(this);
     udpListener = new UdpListener(this);
     udpBroadcaster = new UdpBroadcaster(this);
+    connectionTimer = new QTimer(this);
+    connectionTimer->setSingleShot(true);
+    connect(connectionTimer, &QTimer::timeout, this, &MainWindow::onConnectionTimeout);
     
     setupUi();
     
@@ -22,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     udpBroadcaster->start(); // Auto-start broadcasting for MVP ease of use
     
     connect(udpListener, &UdpListener::deviceListUpdated, this, &MainWindow::updateDiscoveryList);
+    connect(transport, &NetworkTransport::connected, this, &MainWindow::onTransportConnected);
+    connect(transport, &NetworkTransport::errorOccurred, this, &MainWindow::onTransportError);
     
     resize(600, 500);
     setWindowTitle("USB Share (MVP + Discovery)");
@@ -105,6 +111,7 @@ void MainWindow::onConnectClicked() {
     
     statusLabel->setText("Connecting to " + ip + "...");
     transport->connectToHost(ip, 3240);
+    connectionTimer->start(5000);
 }
 
 void MainWindow::onShareClicked() {
@@ -128,4 +135,23 @@ void MainWindow::onDiscoveredDeviceClicked(QTreeWidgetItem *item, int column) {
     QString ip = item->data(0, Qt::UserRole).toString();
     ipInput->setText(ip);
     statusLabel->setText("Selected " + ip);
+}
+
+void MainWindow::onTransportConnected() {
+    connectionTimer->stop();
+    statusLabel->setText("Connected! Requesting Device List...");
+    // Send OP_REQ_DEVLIST (0x8005)
+    // 0x0000 is status code (0 = success request?)
+    // Actually createHeader puts seqNum, which mimics Status field position in USBIP header
+    transport->sendData(NetworkTransport::createHeader(0x8005, 0));
+}
+
+void MainWindow::onTransportError(QAbstractSocket::SocketError error) {
+    connectionTimer->stop();
+    statusLabel->setText("Connection Error: " + QString::number(error));
+}
+
+void MainWindow::onConnectionTimeout() {
+    transport->disconnectFromHost();
+    statusLabel->setText("Connection Timed Out");
 }
