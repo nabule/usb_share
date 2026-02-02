@@ -11,13 +11,13 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Technical Analysis & Feasibility' (Protocol in workflow.md) [checkpoint: de9010e]
 
 ## Phase 2: Client Integration (POC)
-- [ ] Task: 协议交互模拟测试
-    - [ ] 编写 C++ 单元测试，模拟客户端向服务端发送 `usbip-win2` 风格的 attach 指令。
-    - [ ] 验证服务端（标准 usbipd）的响应兼容性。
-- [ ] Task: Qt 客户端集成逻辑
-    - [ ] 创建 `UsbIpWin2Client` 类，封装对新工具/驱动的调用。
-    - [ ] 实现核心命令：`usbip attach -r <remote_ip> -b <bus_id>` 的程序化调用。
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Client Integration (POC)' (Protocol in workflow.md)
+- [x] Task: 协议交互模拟测试
+    - [x] 编写 C++ 单元测试，模拟客户端向服务端发送 `usbip-win2` 风格的 attach 指令。
+    - [x] 验证服务端（标准 usbipd）的响应兼容性。
+- [x] Task: Qt 客户端集成逻辑
+    - [x] 创建 `UsbIpWin2Client` 类，封装对新工具/驱动的调用。
+    - [x] 实现核心命令：`usbip attach -r <remote_ip> -b <bus_id>` 的程序化调用。
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Client Integration (POC)' (Protocol in workflow.md) [checkpoint: 15e4a64]
 
 ## Phase 3: Documentation & Verification
 - [ ] Task: 编写集成与使用文档
