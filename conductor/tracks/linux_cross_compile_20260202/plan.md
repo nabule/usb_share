@@ -16,7 +16,7 @@
 - [x] Task: Verify script execution [e8e69b0]
     - [x] Run the script locally to perform the actual installation (Downloads Qt ~1GB+)
     - [x] Verify `qt_env` directory structure and `toolchain-mingw.cmake` existence
-- [ ] Task: Conductor - User Manual Verification 'Environment Setup Script Development' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Environment Setup Script Development' (Protocol in workflow.md) [checkpoint: 81d1f1a]
 
 ## Phase 2: Build Integration & Documentation
 在此阶段，我们将使用生成的工具链实际编译项目，修复 CMake 兼容性问题，并记录使用文档。
