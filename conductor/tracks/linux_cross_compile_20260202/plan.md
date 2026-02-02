@@ -8,11 +8,11 @@
     - [x] Implement mock tests for `install_system_deps` (verify apt/dnf commands are constructed correctly based on OS detection)
     - [x] Implement mock tests for `install_qt_libs` (verify `aqt` command arguments for Qt 6.6.2)
     - [x] Implement mock tests for `generate_toolchain` (verify file content generation)
-- [ ] Task: Implement `scripts/setup_cross_compile.py` logic
-    - [ ] Implement System Dependency Detection & Installation (apt/dnf)
-    - [ ] Implement Python Dependency Installation (`aqtinstall`)
-    - [ ] Implement Qt Library Download Logic (Qt 6.6.2, MinGW 64-bit)
-    - [ ] Implement `toolchain-mingw.cmake` Generation Logic
+- [x] Task: Implement `scripts/setup_cross_compile.py` logic [67f011c]
+    - [x] Implement System Dependency Detection & Installation (apt/dnf)
+    - [x] Implement Python Dependency Installation (`aqtinstall`)
+    - [x] Implement Qt Library Download Logic (Qt 6.6.2, MinGW 64-bit)
+    - [x] Implement `toolchain-mingw.cmake` Generation Logic
 - [ ] Task: Verify script execution
     - [ ] Run the script locally to perform the actual installation (Downloads Qt ~1GB+)
     - [ ] Verify `qt_env` directory structure and `toolchain-mingw.cmake` existence
