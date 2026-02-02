@@ -6,3 +6,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: MVP：基于 USBIP-WIN 和 Qt 的底层 USB TCP/IP 共享核心实现**
   *Link: [./tracks/mvp_core_20260201/](./tracks/mvp_core_20260201/)*
+
+---
+
+- [x] **Track: 修复连接卡死问题：B 可以看到 A 但无法建立连接**
+  *Link: [./tracks/fix_connection_hang_20260202/](./tracks/fix_connection_hang_20260202/)*
