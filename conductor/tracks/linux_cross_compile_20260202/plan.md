@@ -21,9 +21,10 @@
 ## Phase 2: Build Integration & Documentation
 在此阶段，我们将使用生成的工具链实际编译项目，修复 CMake 兼容性问题，并记录使用文档。
 
-- [ ] Task: Verify CMake Configuration
-    - [ ] Run CMake configure step using the new toolchain
-    - [ ] Fix any `CMakeLists.txt` issues specific to MinGW environment (vs MSVC)
+- [x] Task: Verify CMake Configuration [609927]
+    - [x] Run CMake configure step using the new toolchain
+    - [x] Fix any `CMakeLists.txt` issues specific to MinGW environment (vs MSVC)
+    - [x] **Fix**: Install Linux Host Qt Tools (moc/rcc/uic) to resolve AUTOMOC execution failure.
 - [ ] Task: Verify Build Process
     - [ ] Run build command (e.g., `cmake --build`)
     - [ ] Ensure binaries (`usb_share.exe`, etc.) are generated successfully
