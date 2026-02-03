@@ -1,0 +1,8 @@
+{
+  "track_id": "linux_cross_compile_20260202",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-02T00:00:00Z",
+  "updated_at": "2026-02-02T00:00:00Z",
+  "description": "Implement Linux to Windows (Win10 64-bit) cross-compilation for Qt components, skipping driver compilation."
+}
