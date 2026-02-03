@@ -23,6 +23,9 @@
 
 ## 4. Build & Tooling
 - **IDE:** Visual Studio 2022 (Required for WDK integration)
-- **Compiler:** MSVC (Microsoft Visual C++)
+- **Compiler:** 
+    - MSVC (Microsoft Visual C++) for Windows Native Build.
+    - **MinGW-w64 (x86_64)** for Linux Cross-Compilation (App logic only).
 - **Version Control:** Git
 - **Installer:** Inno Setup (用于生成单文件包或简单的驱动安装脚本)
+- **Cross-Compilation Setup:** `aqtinstall` (Used to manage Qt Windows libs on Linux).
