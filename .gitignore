@@ -1,0 +1,35 @@
+# Build directories
+build/
+build_win/
+build_windows/
+build_win_cross/
+build_win_test/
+dist/
+dist_windows/
+
+# Qt Environment and Tools
+qt_env/
+driver_temp/
+aqtinstall.log
+
+# CMake generated
+toolchain-mingw.cmake
+CMakeUserPresets.json
+
+# IDE and Editors
+.vscode/
+.idea/
+*.user
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

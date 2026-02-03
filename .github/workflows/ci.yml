@@ -1,0 +1,58 @@
+name: Windows Build & Release
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    name: Build and Test (Windows)
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.6.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+
+    - name: Setup Ninja
+      uses: dschu/setup-ninja@v1
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure CMake
+      # Using Ninja Generator for faster builds
+      run: cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Run Tests
+      # Excluding test_usbip_win2_client as it requires kernel drivers
+      run: ctest --test-dir build -C Release --output-on-failure -E "test_usbip_win2_client"
+
+    - name: Create Package Directory
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path dist
+        Copy-Item build\usb_share.exe -Destination dist\
+
+    - name: Run windeployqt
+      shell: pwsh
+      run: |
+        windeployqt dist\usb_share.exe --dir dist --no-translations --compiler-runtime
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: usb_share_windows_x64
+        path: dist/

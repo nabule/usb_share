@@ -36,6 +36,8 @@ python3 scripts/uninstall_cross_compile.py
 
 该脚本会安全移除项目目录下的库文件和配置文件。系统级依赖请参考脚本输出进行手动卸载。
 
+## 2. 编译项目
+
 环境搭建完成后，使用以下命令进行编译：
 
 ```bash
@@ -46,9 +48,18 @@ cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw.cmake -B build_win_cross .
 cmake --build build_win_cross -j$(nproc)
 ```
 
-编译产物（`.exe` 文件）将位于 `build_win_cross/` 目录下。
+## 3. 打包与分发 (解决 DLL 缺失问题)
 
-## 3. 注意事项
+编译生成的 `.exe` 文件在 Windows 上运行需要配套的 Qt 和 MinGW 运行时库。我们提供了一个部署脚本来自动收集这些 DLL：
+
+```bash
+python3 scripts/deploy_windows.py
+```
+
+该脚本会创建一个 **`dist_windows/`** 文件夹。
+**分发时，请务必将整个 `dist_windows/` 文件夹复制到 Windows 上。**
+
+## 4. 注意事项
 
 - **驱动程序**：底层的 USB 驱动（`usbip2_ude.sys` 等）**无法**在 Linux 下交叉编译。请直接从 [Releases](...) 下载预编译的驱动，或在 Windows 下使用 Visual Studio 编译驱动部分。
 - **运行**：生成的 `.exe` 文件需要复制到 Windows 环境运行。如果您安装了 Wine，也可以尝试直接在 Linux 下运行：`wine build_win_cross/usb_share.exe`。
