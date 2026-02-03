@@ -24,7 +24,7 @@ jobs:
         arch: 'win64_msvc2019_64'
 
     - name: Setup Ninja
-      uses: dschu/setup-ninja@v1
+      run: choco install ninja
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
