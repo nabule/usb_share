@@ -28,7 +28,7 @@
 - [x] Task: Verify Build Process [610713]
     - [x] Run build command (e.g., `cmake --build`)
     - [x] Ensure binaries (`usb_share.exe`, etc.) are generated successfully
-- [ ] Task: Documentation
-    - [ ] Create `docs/linux_cross_compile.md` with usage instructions
-    - [ ] Update `README.md` to reference the cross-compilation guide
+- [x] Task: Documentation [294451d]
+    - [x] Create `docs/linux_cross_compile.md` with usage instructions
+    - [x] Update `README.md` to reference the cross-compilation guide
 - [ ] Task: Conductor - User Manual Verification 'Build Integration & Documentation' (Protocol in workflow.md)
