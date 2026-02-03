@@ -56,3 +56,29 @@ jobs:
       with:
         name: usb_share_windows_x64
         path: dist/
+
+  build_cross:
+    name: Cross-Compile (Linux -> Windows)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies & Setup Environment
+      run: |
+        python3 scripts/setup_cross_compile.py
+
+    - name: Configure CMake
+      run: cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw.cmake -B build_win_cross -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build_win_cross --config Release
+
+    - name: List Artifacts
+      run: ls -R build_win_cross/

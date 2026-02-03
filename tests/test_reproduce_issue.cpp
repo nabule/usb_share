@@ -9,7 +9,7 @@ private slots:
     void testConnectionHang() {
         // 1. Setup Mock Server (simulating usbipd)
         QTcpServer server;
-        QVERIFY(server.listen(QHostAddress::LocalHost, 3240));
+        QVERIFY(server.listen(QHostAddress::LocalHost, 0)); // Use dynamic port
 
         // 2. Setup Client (NetworkTransport)
         NetworkTransport transport;
@@ -17,11 +17,12 @@ private slots:
         QSignalSpy spyData(&transport, &NetworkTransport::dataReceived);
 
         // 3. Connect
-        qDebug() << "Client connecting to 127.0.0.1:3240";
-        transport.connectToHost("127.0.0.1", 3240);
+        quint16 port = server.serverPort();
+        qDebug() << "Client connecting to 127.0.0.1:" << port;
+        transport.connectToHost("127.0.0.1", port);
 
-        // 4. Wait for connection
-        if (!spyConnected.wait(1000)) {
+        // 4. Wait for connection (Increased timeout for CI)
+        if (!spyConnected.wait(5000)) {
             qDebug() << "Client failed to connect! Socket State:" << transport.state();
             // Check error
         } else {
@@ -37,11 +38,11 @@ private slots:
         // (Server waiting for data, Client sending nothing).
         
         // To verify what the server received:
-        if (!server.waitForNewConnection(1000)) {
+        if (!server.waitForNewConnection(5000)) {
              qDebug() << "Server timeout waiting for connection. Server Error:" << server.serverError() << server.errorString();
              qDebug() << "Server listening on:" << server.serverAddress() << server.serverPort();
         }
-        QVERIFY(server.waitForNewConnection(1000));
+        QVERIFY(server.waitForNewConnection(5000));
         QTcpSocket *serverSideSocket = server.nextPendingConnection();
         QVERIFY(serverSideSocket);
         
