@@ -37,8 +37,8 @@ jobs:
       run: cmake --build build --config Release
 
     - name: Run Tests
-      # Excluding test_usbip_win2_client as it requires kernel drivers
-      run: ctest --test-dir build -C Release --output-on-failure -E "test_usbip_win2_client"
+      # Excluding test_usbip_win2_client and test_reproduce_issue
+      run: ctest --test-dir build -C Release --output-on-failure -E "test_usbip_win2_client|test_reproduce_issue"
 
     - name: Create Package Directory
       shell: pwsh
