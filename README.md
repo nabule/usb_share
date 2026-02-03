@@ -26,6 +26,37 @@ USB-Share 解决了远程办公或多机协作场景下，物理 USB 设备（�
 
 ---
 
+## 🔧 技术原理与架构
+
+本项目基于 Linux 内核主线收录的 **USB/IP 协议** (The USB/IP Project)，采用 C/S 架构实现 USB 设备的跨网络透传。
+
+### 1. 架构概览
+- **服务端 (Server / Stub Driver)**:
+  - 位于物理插入 USB 设备的主机 (Host A)。
+  - **核心职责**: 使用桩驱动 (Stub Driver) 将物理设备从原操作系统解绑，截获其 USB 请求块 (URB)，并通过 TCP 封装转发。
+  - **实现方案**: Windows 端推荐使用成熟的 [usbipd-win](https://github.com/dorssel/usbipd-win)。
+
+- **客户端 (Client / VHCI Driver)**:
+  - 位于需要使用 USB 设备的远程主机 (Host B)。
+  - **核心职责**: 使用虚拟主控制器接口 (VHCI) 模拟一个虚拟 USB 端口，欺骗操作系统认为有真实设备插入。将系统的 USB 指令封装为 TCP 包发送给服务端。
+  - **实现方案**: 采用 [usbip-win2](https://github.com/vadimgrn/usbip-win2) 提供的内核级 VHCI 驱动 (WHLK认证级别架构)。
+
+### 2. 通信协议
+- **标准 USB/IP (TCP 3240)**:
+  - 负责底层的设备枚举、握手与高频数据传输。
+  - 这是一个二进制协议，直接在内核态 (Kernel Mode) 处理 TCP 流，确保极低延迟。
+- **设备发现 (UDP 3241)**:
+  - **USB-Share 独有功能**。
+  - 服务端定时发送 UDP 广播，客户端监听以实现“即插即用”的局域网自动发现，无需手动输入 IP。
+
+### 3. USB-Share 的角色
+USB-Share 本身不制造驱动，而是作为**应用层编排者 (Orchestrator)**：
+- **GUI 封装**: 将复杂的命令行操作 (usbip list/attach) 转化为简单的点击。
+- **连接管理**: 维护心跳，处理断线重连，防止驱动僵死。
+- **环境统筹**: 统一管理服务端与客户端的配置，屏蔽底层驱动的碎片化差异。
+
+---
+
 ## 📋 目录
 - [环境要求](#-环境要求)
 - [安装指南 (重要)](#-安装指南-重要)
@@ -103,6 +134,7 @@ USB-Share 解决了远程办公或多机协作场景下，物理 USB 设备（�
   python3 scripts/setup_cross_compile.py
   cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw.cmake -B build_win_cross .
   cmake --build build_win_cross
+  python3 scripts/deploy_windows.py  # 这一步生成带 DLL 的发布包
   ```
 
 ### 构建步骤
