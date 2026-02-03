@@ -9,7 +9,7 @@ private slots:
     void testConnectionHang() {
         // 1. Setup Mock Server (simulating usbipd)
         QTcpServer server;
-        QVERIFY(server.listen(QHostAddress::LocalHostIPv4, 0)); // Use dynamic port, force IPv4
+        QVERIFY(server.listen(QHostAddress("127.0.0.1"), 0)); // Use dynamic port, force IPv4
 
         // 2. Setup Client (NetworkTransport)
         NetworkTransport transport;
