@@ -25,9 +25,9 @@
     - [x] Run CMake configure step using the new toolchain
     - [x] Fix any `CMakeLists.txt` issues specific to MinGW environment (vs MSVC)
     - [x] **Fix**: Install Linux Host Qt Tools (moc/rcc/uic) to resolve AUTOMOC execution failure.
-- [ ] Task: Verify Build Process
-    - [ ] Run build command (e.g., `cmake --build`)
-    - [ ] Ensure binaries (`usb_share.exe`, etc.) are generated successfully
+- [x] Task: Verify Build Process [610713]
+    - [x] Run build command (e.g., `cmake --build`)
+    - [x] Ensure binaries (`usb_share.exe`, etc.) are generated successfully
 - [ ] Task: Documentation
     - [ ] Create `docs/linux_cross_compile.md` with usage instructions
     - [ ] Update `README.md` to reference the cross-compilation guide
