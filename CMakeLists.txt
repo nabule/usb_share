@@ -39,8 +39,9 @@ add_executable(usb_share WIN32
     src/gui/MainWindow.h
     src/gui/MainWindow.cpp
 )
+set_target_properties(usb_share PROPERTIES WIN32_EXECUTABLE TRUE)
 # Note: linking core_lib should bring in Qt6::Network headers
-target_link_libraries(usb_share PRIVATE core_lib Qt6::Widgets)
+target_link_libraries(usb_share PRIVATE core_lib Qt6::Widgets Qt6::EntryPointImplementation)
 target_include_directories(usb_share PRIVATE src/gui)
 
 # Tests
