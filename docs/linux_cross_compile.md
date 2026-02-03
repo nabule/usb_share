@@ -10,14 +10,31 @@
 python3 scripts/setup_cross_compile.py
 ```
 
-该脚本会自动执行：
-- 安装系统依赖 (`cmake`, `mingw-w64`, `ninja`)。
-- 下载 Windows 版 Qt 6.6.2 库到 `qt_env`。
-- 下载 Linux 版 Qt 6.6.2 工具（用于编译过程中的 `moc`/`rcc`）。
-- 生成 `toolchain-mingw.cmake` 交叉编译配置文件。
-- 自动处理 Qt 工具的软链接以解决 CMake 兼容性问题。
+### 该脚本安装的内容清单 (Installed Items):
+- **系统软件包** (通过 apt/dnf):
+    - `cmake`: 构建工具。
+    - `mingw-w64`: 交叉编译器工具链 (gcc, g++, windres)。
+    - `ninja-build`: 高效构建系统。
+- **Python 依赖**:
+    - `aqtinstall`: 用于从 Qt 官方下载预编译库。
+- **项目目录产物**:
+    - `qt_env/`: 包含针对 Windows 的 Qt 6.6.2 库及针对 Linux 的编译工具。
+    - `toolchain-mingw.cmake`: CMake 交叉编译配置文件。
+- **特殊处理**:
+    - 自动在 `qt_env` 目录下创建软链接，将 Windows 版的 `moc.exe` 等指向 Linux 原生版本，以解决交叉编译兼容性。
 
 ## 2. 编译项目
+... (略)
+
+## 4. 环境卸载
+
+如果您需要清理交叉编译环境，请运行卸载脚本：
+
+```bash
+python3 scripts/uninstall_cross_compile.py
+```
+
+该脚本会安全移除项目目录下的库文件和配置文件。系统级依赖请参考脚本输出进行手动卸载。
 
 环境搭建完成后，使用以下命令进行编译：
 

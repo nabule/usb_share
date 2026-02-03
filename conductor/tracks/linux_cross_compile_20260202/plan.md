@@ -31,4 +31,7 @@
 - [x] Task: Documentation [294451d]
     - [x] Create `docs/linux_cross_compile.md` with usage instructions
     - [x] Update `README.md` to reference the cross-compilation guide
+- [x] Task: Enhanced Setup & Uninstall Scripts
+    - [x] Create `scripts/uninstall_cross_compile.py`
+    - [x] Update `docs/linux_cross_compile.md` with detailed dependency list and uninstall instructions
 - [ ] Task: Conductor - User Manual Verification 'Build Integration & Documentation' (Protocol in workflow.md)
